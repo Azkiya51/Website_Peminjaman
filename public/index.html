@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SiPinjam — Sistem Peminjaman Kelas</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web@2.1.1/src/index.js"></script>
+</head>
+<body>
+
+<!-- Admin Login Modal -->
+<div class="admin-gate" id="admin-gate">
+  <div class="admin-gate-card">
+    <div class="gate-icon"><i class="ph-duotone ph-shield-check"></i></div>
+    <h2>Panel Admin</h2>
+    <p>Masukkan kata sandi untuk mengakses panel admin</p>
+    <div class="gate-input-wrap">
+      <i class="ph ph-lock-simple gate-lock-icon"></i>
+      <input type="password" id="admin-password-input" placeholder="Kata sandi admin..." />
+      <button class="gate-toggle" id="toggle-pw" type="button"><i class="ph ph-eye"></i></button>
+    </div>
+    <div class="gate-error hidden" id="gate-error"><i class="ph ph-warning-circle"></i> Kata sandi salah!</div>
+    <div class="gate-actions">
+      <button class="btn-ghost" id="gate-cancel">Batal</button>
+      <button class="btn-primary" id="gate-submit"><i class="ph ph-sign-in"></i> Masuk</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sidebar Navigation -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><i class="ph-duotone ph-buildings"></i></div>
+    <div>
+      <span class="logo-title">SiPinjam</span>
+      <span class="logo-sub">Fakultas Sains & Teknologi</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="#" class="nav-item active" data-page="beranda">
+      <i class="ph-duotone ph-house-simple"></i><span>Beranda</span>
+    </a>
+    <a href="#" class="nav-item" data-page="peminjaman">
+      <i class="ph-duotone ph-calendar-plus"></i><span>Peminjaman</span>
+    </a>
+    <a href="#" class="nav-item" data-page="jadwal">
+      <i class="ph-duotone ph-calendar-dots"></i><span>Jadwal Kelas</span>
+    </a>
+    <a href="#" class="nav-item" data-page="pesan">
+      <i class="ph-duotone ph-chat-teardrop-dots"></i><span>Pesan</span>
+      <span class="badge" id="msg-badge">0</span>
+    </a>
+    <a href="#" class="nav-item nav-admin" data-page="admin" id="nav-admin">
+      <i class="ph-duotone ph-shield-star"></i><span>Admin</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <div class="sidebar-version"><i class="ph ph-git-branch"></i> v2.0.0</div>
+  </div>
+</aside>
+
+<!-- Mobile Top Bar -->
+<div class="topbar">
+  <button class="menu-toggle" id="menuToggle"><i class="ph ph-list"></i></button>
+  <span class="topbar-title">SiPinjam</span>
+  <div class="topbar-pulse"></div>
+</div>
+
+<!-- Main Content -->
+<main class="main-content">
+
+  <!-- ===== BERANDA ===== -->
+  <section class="page active" id="page-beranda">
+    <div class="page-header">
+      <div class="page-header-text">
+        <h1>Selamat Datang <span class="wave">👋</span></h1>
+        <p>Sistem Informasi Peminjaman Kelas — Fakultas Sains Dan Teknologi</p>
+      </div>
+      <div class="header-badge"><i class="ph-duotone ph-lightning"></i> Realtime</div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card stat-blue">
+        <div class="stat-icon"><i class="ph-duotone ph-door"></i></div>
+        <div class="stat-info">
+          <span class="stat-num" id="stat-total">9</span>
+          <span class="stat-label">Total Ruangan</span>
+        </div>
+        <div class="stat-glow"></div>
+      </div>
+      <div class="stat-card stat-amber">
+        <div class="stat-icon"><i class="ph-duotone ph-hourglass-medium"></i></div>
+        <div class="stat-info">
+          <span class="stat-num" id="stat-pending">0</span>
+          <span class="stat-label">Menunggu</span>
+        </div>
+        <div class="stat-glow"></div>
+      </div>
+      <div class="stat-card stat-emerald">
+        <div class="stat-icon"><i class="ph-duotone ph-check-circle"></i></div>
+        <div class="stat-info">
+          <span class="stat-num" id="stat-approved">0</span>
+          <span class="stat-label">Disetujui</span>
+        </div>
+        <div class="stat-glow"></div>
+      </div>
+      <div class="stat-card stat-rose">
+        <div class="stat-icon"><i class="ph-duotone ph-x-circle"></i></div>
+        <div class="stat-info">
+          <span class="stat-num" id="stat-rejected">0</span>
+          <span class="stat-label">Ditolak</span>
+        </div>
+        <div class="stat-glow"></div>
+      </div>
+    </div>
+
+    <div class="beranda-grid">
+      <div class="card room-status-card">
+        <h3><i class="ph-duotone ph-map-trifold"></i> Status Ruangan</h3>
+        <div class="room-list" id="beranda-rooms"></div>
+      </div>
+      <div class="card recent-card">
+        <h3><i class="ph-duotone ph-clock-counter-clockwise"></i> Aktivitas Terbaru</h3>
+        <div class="recent-list" id="recent-list">
+          <div class="empty-state"><i class="ph-duotone ph-folder-open"></i><p>Belum ada peminjaman</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PEMINJAMAN ===== -->
+  <section class="page" id="page-peminjaman">
+    <div class="page-header">
+      <div class="page-header-text">
+        <h1>Form Peminjaman</h1>
+        <p>Isi formulir di bawah untuk meminjam ruangan kelas</p>
+      </div>
+    </div>
+
+    <div class="form-layout">
+      <div class="card form-card">
+        <div class="form-section-title"><i class="ph-duotone ph-user-circle"></i> Data Peminjam</div>
+        <div class="form-group">
+          <label><i class="ph ph-user"></i> Nama Lengkap</label>
+          <input type="text" id="f-nama" placeholder="Masukkan nama lengkap Anda..." />
+        </div>
+        <div class="form-group">
+          <label><i class="ph ph-identification-card"></i> NIM</label>
+          <input type="text" id="f-nim" placeholder="Contoh: 2201234567" />
+        </div>
+        <div class="form-section-title" style="margin-top:20px"><i class="ph-duotone ph-door-open"></i> Detail Ruangan</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label><i class="ph ph-door"></i> Ruangan</label>
+            <select id="f-ruangan">
+              <option value="">Pilih ruangan...</option>
+              <option>4.2</option><option>4.3</option><option>4.4</option>
+              <option>4.5</option><option>4.6</option><option>4.7</option>
+              <option>4.8</option><option>4.9</option><option>4.10</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label><i class="ph ph-calendar"></i> Tanggal</label>
+            <input type="date" id="f-tanggal" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label><i class="ph ph-clock"></i> Jam Mulai</label>
+            <input type="time" id="f-mulai" />
+          </div>
+          <div class="form-group">
+            <label><i class="ph ph-clock-countdown"></i> Jam Selesai</label>
+            <input type="time" id="f-selesai" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label><i class="ph ph-pencil-line"></i> Alasan Peminjaman</label>
+          <textarea id="f-alasan" rows="4" placeholder="Jelaskan keperluan peminjaman ruangan..."></textarea>
+        </div>
+        <button class="btn-primary" id="btn-pinjam">
+          <i class="ph ph-paper-plane-tilt"></i> Ajukan Peminjaman
+        </button>
+      </div>
+
+      <div class="card side-info">
+        <h3><i class="ph-duotone ph-info"></i> Informasi Penting</h3>
+        <ul class="info-list">
+          <li><i class="ph-fill ph-check-circle"></i> Peminjaman diproses maksimal 1x24 jam</li>
+          <li><i class="ph-fill ph-check-circle"></i> Ruangan dapat dipinjam Senin–Sabtu</li>
+          <li><i class="ph-fill ph-check-circle"></i> Jam operasional 07.00 – 21.00</li>
+          <li><i class="ph-fill ph-check-circle"></i> Notifikasi dikirim via menu Pesan</li>
+          <li><i class="ph-fill ph-warning-circle"></i> Satu NIM, satu peminjaman aktif</li>
+        </ul>
+        <div class="divider"></div>
+        <div class="form-group">
+          <label><i class="ph ph-magnifying-glass"></i> Cek Ketersediaan Ruangan</label>
+          <select id="cek-ruangan">
+            <option value="">Pilih ruangan...</option>
+            <option>4.2</option><option>4.3</option><option>4.4</option>
+            <option>4.5</option><option>4.6</option><option>4.7</option>
+            <option>4.8</option><option>4.9</option><option>4.10</option>
+          </select>
+        </div>
+        <div id="cek-result" class="cek-result hidden"></div>
+      </div>
+    </div>
+
+    <div class="card mt-2">
+      <h3><i class="ph-duotone ph-archive"></i> Riwayat Peminjaman Saya</h3>
+      <div id="riwayat-list" class="table-wrapper">
+        <div class="empty-state"><i class="ph-duotone ph-folder-open"></i><p>Belum ada riwayat</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== JADWAL KELAS ===== -->
+  <section class="page" id="page-jadwal">
+    <div class="page-header">
+      <div class="page-header-text">
+        <h1>Jadwal Seluruh Kelas</h1>
+        <p>Lihat jadwal penggunaan ruangan kelas 4.2 – 4.10</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="jadwal-controls">
+        <div class="jadwal-filter">
+          <label><i class="ph ph-door"></i> Ruangan:</label>
+          <div class="room-tabs" id="room-tabs">
+            <button class="room-tab active" data-room="all">Semua</button>
+            <button class="room-tab" data-room="4.2">4.2</button>
+            <button class="room-tab" data-room="4.3">4.3</button>
+            <button class="room-tab" data-room="4.4">4.4</button>
+            <button class="room-tab" data-room="4.5">4.5</button>
+            <button class="room-tab" data-room="4.6">4.6</button>
+            <button class="room-tab" data-room="4.7">4.7</button>
+            <button class="room-tab" data-room="4.8">4.8</button>
+            <button class="room-tab" data-room="4.9">4.9</button>
+            <button class="room-tab" data-room="4.10">4.10</button>
+          </div>
+        </div>
+        <div class="jadwal-filter">
+          <label><i class="ph ph-calendar-blank"></i> Hari:</label>
+          <select id="filter-hari">
+            <option value="all">Semua Hari</option>
+            <option>Senin</option><option>Selasa</option><option>Rabu</option>
+            <option>Kamis</option><option>Jumat</option><option>Sabtu</option>
+          </select>
+        </div>
+      </div>
+      <div class="jadwal-table-wrap" id="jadwal-table-wrap"></div>
+    </div>
+  </section>
+
+  <!-- ===== PESAN ===== -->
+  <section class="page" id="page-pesan">
+    <div class="page-header">
+      <div class="page-header-text">
+        <h1>Kotak Pesan</h1>
+        <p>Pesan dari admin terkait status peminjaman Anda</p>
+      </div>
+    </div>
+    <div class="pesan-layout">
+      <div class="pesan-list-col card" id="pesan-list">
+        <div class="pesan-header-row">
+          <span><i class="ph ph-tray"></i> Semua Pesan</span>
+          <span class="badge-accent" id="pesan-count">0</span>
+        </div>
+        <div id="pesan-items">
+          <div class="empty-state"><i class="ph-duotone ph-envelope-open"></i><p>Belum ada pesan</p></div>
+        </div>
+      </div>
+      <div class="pesan-detail-col card" id="pesan-detail">
+        <div class="empty-state tall"><i class="ph-duotone ph-chat-dots"></i><p>Pilih pesan untuk melihat detail</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ADMIN ===== -->
+  <section class="page" id="page-admin">
+    <div class="page-header">
+      <div class="page-header-text">
+        <h1><i class="ph-duotone ph-shield-star"></i> Panel Admin</h1>
+        <p>Kelola pemetaan kelas dan persetujuan peminjaman</p>
+      </div>
+      <button class="btn-ghost-sm" id="btn-logout-admin">
+        <i class="ph ph-sign-out"></i> Keluar
+      </button>
+    </div>
+
+    <div class="admin-tabs">
+      <button class="atab active" data-atab="permohonan"><i class="ph-duotone ph-inbox"></i> Permohonan</button>
+      <button class="atab" data-atab="pemetaan"><i class="ph-duotone ph-map-pin-area"></i> Pemetaan Kelas</button>
+      <button class="atab" data-atab="jadwal-admin"><i class="ph-duotone ph-calendar-check"></i> Atur Jadwal</button>
+    </div>
+
+    <!-- Sub: Permohonan -->
+    <div class="admin-panel active" id="apanel-permohonan">
+      <div class="card">
+        <h3><i class="ph-duotone ph-clipboard-text"></i> Daftar Permohonan Peminjaman</h3>
+        <div id="admin-permohonan-list" class="table-wrapper">
+          <div class="empty-state"><i class="ph-duotone ph-folder-open"></i><p>Belum ada permohonan</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sub: Pemetaan -->
+    <div class="admin-panel" id="apanel-pemetaan">
+      <div class="pemetaan-grid">
+        <div class="card">
+          <h3><i class="ph-duotone ph-pencil-ruler"></i> Tambah / Edit Pemetaan</h3>
+          <div class="form-group">
+            <label>Kode Ruangan</label>
+            <select id="peta-ruangan">
+              <option>4.2</option><option>4.3</option><option>4.4</option>
+              <option>4.5</option><option>4.6</option><option>4.7</option>
+              <option>4.8</option><option>4.9</option><option>4.10</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Nama / Fungsi Ruangan</label>
+            <input type="text" id="peta-nama" placeholder="cth: Lab Jaringan, Kelas Teori..." />
+          </div>
+          <div class="form-group">
+            <label>Kapasitas</label>
+            <input type="number" id="peta-kapasitas" placeholder="Jumlah kursi" />
+          </div>
+          <div class="form-group">
+            <label>Fasilitas</label>
+            <input type="text" id="peta-fasilitas" placeholder="cth: AC, Proyektor, WiFi..." />
+          </div>
+          <div class="form-group">
+            <label>Status Default</label>
+            <select id="peta-status">
+              <option value="available">Tersedia</option>
+              <option value="maintenance">Maintenance</option>
+              <option value="reserved">Reservasi Tetap</option>
+            </select>
+          </div>
+          <button class="btn-primary" id="btn-save-peta"><i class="ph ph-floppy-disk"></i> Simpan Pemetaan</button>
+        </div>
+        <div class="card">
+          <h3><i class="ph-duotone ph-list-bullets"></i> Daftar Ruangan</h3>
+          <div id="peta-list" class="room-map-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sub: Jadwal Admin -->
+    <div class="admin-panel" id="apanel-jadwal-admin">
+      <div class="card">
+        <h3><i class="ph-duotone ph-plus-circle"></i> Tambah Jadwal Kelas Reguler</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Ruangan</label>
+            <select id="aj-ruangan">
+              <option>4.2</option><option>4.3</option><option>4.4</option>
+              <option>4.5</option><option>4.6</option><option>4.7</option>
+              <option>4.8</option><option>4.9</option><option>4.10</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Hari</label>
+            <select id="aj-hari">
+              <option>Senin</option><option>Selasa</option><option>Rabu</option>
+              <option>Kamis</option><option>Jumat</option><option>Sabtu</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Jam Mulai</label>
+            <input type="time" id="aj-mulai" />
+          </div>
+          <div class="form-group">
+            <label>Jam Selesai</label>
+            <input type="time" id="aj-selesai" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Mata Kuliah</label>
+            <input type="text" id="aj-matkul" placeholder="Nama mata kuliah..." />
+          </div>
+          <div class="form-group">
+            <label>Dosen</label>
+            <input type="text" id="aj-dosen" placeholder="Nama dosen..." />
+          </div>
+        </div>
+        <button class="btn-primary" id="btn-save-jadwal"><i class="ph ph-plus"></i> Tambah Jadwal</button>
+      </div>
+      <div class="card mt-1">
+        <h3><i class="ph-duotone ph-table"></i> Jadwal Tersimpan</h3>
+        <div id="admin-jadwal-list" class="table-wrapper"></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Toast Notification -->
+<div class="toast" id="toast"></div>
+<div class="overlay" id="overlay"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

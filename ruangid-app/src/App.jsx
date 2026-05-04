@@ -10,7 +10,9 @@ import Jadwal from './pages/Jadwal';
 import Pesan from './pages/Pesan';
 import Admin from './pages/Admin';
 
-const API_BASE = window.location.origin + '/api';
+const API_BASE = window.location.hostname === 'localhost' 
+  ? 'http://localhost:5000/api' 
+  : 'https://websitepeminjaman-production.up.railway.app/api';
 const ADMIN_PASSWORD = 'Zeckganteng';
 
 // ─── API Helper ───────────────────────────────────────────────────────────────

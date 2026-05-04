@@ -1,5 +1,0 @@
-node_modules/
-.env
-*.sql
-backend/node_modules/
-backend/.env

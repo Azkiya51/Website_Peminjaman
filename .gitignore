@@ -1,0 +1,31 @@
+# Dependency folders (Sangat penting agar tidak berat saat push)
+node_modules/
+ruangid-app/node_modules/
+ruangid-server/node_modules/
+
+# Environment variables (Berisi kredensial MongoDB Atlas & API Key)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+ruangid-server/.env
+
+# Build & Production output
+ruangid-app/dist/
+ruangid-app/build/
+ruangid-app/out/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+ruangid-server/npm-debug.log*
+
+# Editor & OS files
+.DS_Store
+.vscode/
+Thumbs.db
+
+# Vite specific
+ruangid-app/*.timestamp-*

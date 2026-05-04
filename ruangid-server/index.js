@@ -104,12 +104,26 @@ app.post('/api/peminjaman', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// PATCH update status peminjaman (approve/reject)
+// PATCH update status peminjaman (approve/reject) + auto kirim pesan
 app.patch('/api/peminjaman/:id/status', async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
-    await Peminjaman.findByIdAndUpdate(id, { status }, { new: true });
+
+    const updated = await Peminjaman.findByIdAndUpdate(id, { status }, { new: true });
+    if (!updated) return res.status(404).json({ error: 'Peminjaman tidak ditemukan' });
+
+    // ✅ Auto-buat pesan notifikasi
+    const isApproved = status === 'approved';
+    const subject = isApproved
+      ? `✅ Peminjaman Kelas ${updated.ruangan} Disetujui`
+      : `❌ Peminjaman Kelas ${updated.ruangan} Ditolak`;
+    const body = isApproved
+      ? `Halo ${updated.nama},\n\nPermohonan peminjaman Kelas ${updated.ruangan} pada tanggal ${updated.tanggal} pukul ${updated.mulai}–${updated.selesai} telah DISETUJUI.\n\nHarap bawa KTM saat menggunakan ruangan dan jaga kebersihan.\n\nTerima kasih.`
+      : `Halo ${updated.nama},\n\nPermohonan peminjaman Kelas ${updated.ruangan} pada tanggal ${updated.tanggal} pukul ${updated.mulai}–${updated.selesai} DITOLAK.\n\nSilakan hubungi admin untuk informasi lebih lanjut.\n\nTerima kasih.`;
+
+    await new Pesan({ pinjam_id: updated._id, subject, body }).save();
+
     res.json({ message: 'Status updated' });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });

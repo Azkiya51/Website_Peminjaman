@@ -1,24 +1,18 @@
 {
-  "name": "ruangid-server",
+  "name": "backend-peminjaman",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "mongodb": "^7.2.0",
-    "mongoose": "^9.6.1",
-    "mysql2": "^3.22.3"
+    "dotenv": "^16.0.0",
+    "express": "^4.18.2",
+    "mongoose": "^8.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.0.0"
   }
 }

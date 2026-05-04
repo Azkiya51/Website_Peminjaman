@@ -5,22 +5,13 @@ const mongoose = require('mongoose');
 
 const app = express();
 
-// --- 1. PENGATURAN CORS (HARUS DI ATAS) ---
-// Ini untuk mengatasi error "blocked by CORS policy" di browser
+// --- 1. CORS CONFIG (Fixing blocked by CORS policy) ---
 app.use(cors({
-  origin: 'https://website-peminjaman.vercel.app', // Domain Vercel Anda
+  origin: 'https://website-peminjaman.vercel.app',
   methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
-
-// Tambahan middleware untuk memastikan header CORS selalu terkirim
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "https://website-peminjaman.vercel.app");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  next();
-});
 
 app.use(express.json());
 
@@ -30,7 +21,7 @@ mongoose.connect(MONGO_URI)
   .then(() => console.log('MongoDB Atlas Terkoneksi!'))
   .catch(err => console.error('Gagal koneksi database:', err));
 
-// --- 3. DEFINE SCHEMA & MODEL ---
+// --- 3. SCHEMAS & MODELS ---
 const PeminjamanSchema = new mongoose.Schema({
   nama: String,
   ruang: String,
@@ -38,83 +29,87 @@ const PeminjamanSchema = new mongoose.Schema({
   jam: String,
   keperluan: String,
   status: { type: String, default: 'pending' }
-});
+}, { timestamps: true });
+
+const PesanSchema = new mongoose.Schema({
+  pinjam_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Peminjaman' },
+  subject: { type: String, default: "Status Peminjaman" },
+  body: { type: String, default: "" },
+  read: { type: Boolean, default: false }
+}, { timestamps: true });
+
 const Peminjaman = mongoose.model('Peminjaman', PeminjamanSchema);
+const Pesan = mongoose.model('Pesan', PesanSchema);
 
-const JadwalSchema = new mongoose.Schema({
-  hari: String,
-  ruang: String,
-  kegiatan: String
+// --- 4. ENDPOINTS PESAN (Sesuai App.jsx & Pesan.jsx) ---
+
+// Get All Messages
+app.get('/api/pesan', async (req, res) => {
+  try {
+    const results = await Pesan.find().sort({ createdAt: -1 });
+    // Map to match frontend field names (id, created_at)
+    const formatted = results.map(p => ({
+      id: p._id,
+      pinjam_id: p.pinjam_id,
+      subject: p.subject,
+      body: p.body || "", // Fix for .substring error
+      read: p.read,
+      created_at: p.createdAt
+    }));
+    res.json(formatted);
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
-const Jadwal = mongoose.model('Jadwal', JadwalSchema);
 
-// --- 4. ENDPOINTS ---
+// Fix 404: Read All Messages (PATCH)
+app.patch('/api/pesan/read-all', async (req, res) => {
+  try {
+    await Pesan.updateMany({ read: false }, { read: true });
+    res.json({ message: 'Semua pesan ditandai dibaca' });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
 
-// Mengambil semua data peminjaman
+// Mark Single Message as Read
+app.patch('/api/pesan/:id/read', async (req, res) => {
+  try {
+    await Pesan.findByIdAndUpdate(req.params.id, { read: true });
+    res.json({ message: 'Pesan dibaca' });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Send New Message (From Admin)
+app.post('/api/pesan', async (req, res) => {
+  try {
+    const baru = new Pesan(req.body);
+    await baru.save();
+    res.json({ message: 'Pesan terkirim' });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// --- 5. ENDPOINTS PEMINJAMAN ---
 app.get('/api/peminjaman', async (req, res) => {
   try {
-    const results = await Peminjaman.find().sort({ _id: -1 });
-    res.json(results);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+    const results = await Peminjaman.find().sort({ createdAt: -1 });
+    const formatted = results.map(p => ({
+      id: p._id,
+      nama: p.nama,
+      ruang: p.ruang,
+      tanggal: p.tanggal,
+      jam: p.jam,
+      keperluan: p.keperluan,
+      status: p.status
+    }));
+    res.json(formatted);
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Menambah data peminjaman baru
 app.post('/api/peminjaman', async (req, res) => {
   try {
     const baru = new Peminjaman(req.body);
     const simpan = await baru.save();
-    res.json({ message: 'Berhasil simpan!', id: simpan._id });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+    res.json({ message: 'Berhasil!', id: simpan._id });
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Mengambil data jadwal
-app.get('/api/jadwal', async (req, res) => {
-  try {
-    const results = await Jadwal.find();
-    res.json(results);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Endpoint Update Status (Admin)
-app.patch('/api/peminjaman/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { status } = req.body;
-    await Peminjaman.findByIdAndUpdate(id, { status });
-    res.json({ message: 'Status diperbarui' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Endpoint Pemetaan (Approved Only)
-app.get('/api/pemetaan', async (req, res) => {
-  try {
-    const results = await Peminjaman.find({ status: 'approved' });
-    res.json(results);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Endpoint Pesan/Notifikasi (Terbaru)
-app.get('/api/pesan', async (req, res) => {
-  try {
-    const results = await Peminjaman.find().sort({ _id: -1 }).limit(5);
-    res.json(results);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// --- 5. START SERVER ---
+// Port & Listen
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server berjalan di port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

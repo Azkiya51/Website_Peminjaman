@@ -4,11 +4,21 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 
 const app = express();
+// Ganti app.use(cors()) dengan ini:
 app.use(cors({
-  origin: 'https://website-peminjaman.vercel.app', // Sesuaikan dengan URL Vercel Anda
-  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+  origin: 'https://website-peminjaman.vercel.app',
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
+
+// Tambahkan middleware ini di bawah cors untuk memastikan header selalu terkirim
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "https://website-peminjaman.vercel.app");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  next();
+});
 app.use(express.json());
 
 // --- KONEKSI MONGODB ---
@@ -90,18 +100,17 @@ app.get('/api/pemetaan', async (req, res) => {
   }
 });
 
-// Endpoint untuk mengambil data pesan/notifikasi
-app.get('/api/pesan', async (req, res) => {
-  try {
-    // Mengambil data peminjaman terbaru untuk dijadikan notifikasi
-    const results = await Peminjaman.find().sort({ _id: -1 }).limit(10);
-    res.json(results);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server berjalan di port ${PORT}`);
+});
+
+app.get('/api/pesan', async (req, res) => {
+  try {
+    const results = await Peminjaman.find().sort({ _id: -1 }).limit(5);
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });

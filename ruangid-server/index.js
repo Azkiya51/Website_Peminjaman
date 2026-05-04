@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 
 const app = express();
 
-// --- 1. CORS CONFIG (Fixing blocked by CORS policy) ---
+// --- 1. CORS CONFIG ---
 app.use(cors({
   origin: 'https://website-peminjaman.vercel.app',
   methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -31,28 +31,29 @@ const PeminjamanSchema = new mongoose.Schema({
   status: { type: String, default: 'pending' }
 }, { timestamps: true });
 
+// Schema Pesan yang sesuai dengan kebutuhan Frontend
 const PesanSchema = new mongoose.Schema({
   pinjam_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Peminjaman' },
-  subject: { type: String, default: "Status Peminjaman" },
-  body: { type: String, default: "" },
+  subject: { type: String, default: "Informasi Peminjaman" },
+  body: { type: String, default: "" }, // Default string kosong agar .substring tidak error
   read: { type: Boolean, default: false }
 }, { timestamps: true });
 
 const Peminjaman = mongoose.model('Peminjaman', PeminjamanSchema);
 const Pesan = mongoose.model('Pesan', PesanSchema);
 
-// --- 4. ENDPOINTS PESAN (Sesuai App.jsx & Pesan.jsx) ---
+// --- 4. ENDPOINTS PESAN ---
 
-// Get All Messages
+// Get All Messages (Digunakan oleh loadPesan di App.jsx)
 app.get('/api/pesan', async (req, res) => {
   try {
     const results = await Pesan.find().sort({ createdAt: -1 });
-    // Map to match frontend field names (id, created_at)
+    // Mapping field agar sesuai dengan p.id dan p.created_at di frontend
     const formatted = results.map(p => ({
       id: p._id,
       pinjam_id: p.pinjam_id,
       subject: p.subject,
-      body: p.body || "", // Fix for .substring error
+      body: p.body || "", // Pastikan body tidak undefined
       read: p.read,
       created_at: p.createdAt
     }));
@@ -60,15 +61,15 @@ app.get('/api/pesan', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Fix 404: Read All Messages (PATCH)
+// FIX ERROR 404: Read All (Digunakan saat pindah ke page pesan)
 app.patch('/api/pesan/read-all', async (req, res) => {
   try {
     await Pesan.updateMany({ read: false }, { read: true });
-    res.json({ message: 'Semua pesan ditandai dibaca' });
+    res.json({ message: 'Semua pesan ditandai telah dibaca' });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Mark Single Message as Read
+// Mark Single Message Read
 app.patch('/api/pesan/:id/read', async (req, res) => {
   try {
     await Pesan.findByIdAndUpdate(req.params.id, { read: true });
@@ -76,12 +77,12 @@ app.patch('/api/pesan/:id/read', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Send New Message (From Admin)
+// Send Message (Dari Admin)
 app.post('/api/pesan', async (req, res) => {
   try {
     const baru = new Pesan(req.body);
     await baru.save();
-    res.json({ message: 'Pesan terkirim' });
+    res.json({ message: 'Pesan berhasil dikirim' });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
@@ -110,6 +111,5 @@ app.post('/api/peminjaman', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Port & Listen
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

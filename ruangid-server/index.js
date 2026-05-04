@@ -4,7 +4,11 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: 'https://website-peminjaman.vercel.app', // Sesuaikan dengan URL Vercel Anda
+  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+  credentials: true
+}));
 app.use(express.json());
 
 // --- KONEKSI MONGODB ---
@@ -80,6 +84,17 @@ app.patch('/api/peminjaman/:id', async (req, res) => {
 app.get('/api/pemetaan', async (req, res) => {
   try {
     const results = await Peminjaman.find({ status: 'approved' });
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Endpoint untuk mengambil data pesan/notifikasi
+app.get('/api/pesan', async (req, res) => {
+  try {
+    // Mengambil data peminjaman terbaru untuk dijadikan notifikasi
+    const results = await Peminjaman.find().sort({ _id: -1 }).limit(10);
     res.json(results);
   } catch (err) {
     res.status(500).json({ error: err.message });

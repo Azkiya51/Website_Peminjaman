@@ -254,8 +254,10 @@ app.patch('/api/pesan/read-all', async (req, res) => {
   res.json({ success: true });
 });
 
-// ===== START SERVER =====
+// ===== START SERVER ===== 
 app.listen(PORT, () => {
   console.log(`✅ SiPinjam server berjalan di http://localhost:${PORT}`);
   console.log(`📦 Supabase URL: ${process.env.SUPABASE_URL}`);
 });
+
+module.exports = app;

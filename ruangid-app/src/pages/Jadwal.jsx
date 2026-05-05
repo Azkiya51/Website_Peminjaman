@@ -3,7 +3,7 @@
 
 import { useState, useMemo } from 'react';
 
-const ROOMS = ['4.2','4.3','4.4','4.5','4.6','4.7','4.8','4.9','4.10'];
+const ROOMS = ['4.2','4.3','4.4','4.5','4.6','4.7','4.8','4.9','4.10','4.11','4.12'];
 const DAYS   = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
 
 export default function Jadwal({ jadwal }) {
@@ -30,7 +30,7 @@ export default function Jadwal({ jadwal }) {
       <div className="page-header">
         <div className="page-header-text">
           <h1>Jadwal Seluruh Kelas</h1>
-          <p>Lihat jadwal penggunaan ruangan kelas 4.2 – 4.10</p>
+          <p>Lihat jadwal penggunaan ruangan kelas 4.2 – 4.12</p>
         </div>
       </div>
 

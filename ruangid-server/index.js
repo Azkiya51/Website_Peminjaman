@@ -156,7 +156,7 @@ app.get('/api/peminjaman', async (req, res) => {
 // POST peminjaman — cek konflik otomatis, TANPA pesan otomatis saat bentrok
 app.post('/api/peminjaman', async (req, res) => {
   try {
-    const { nama, nim, ruangan, tanggal, mulai, selesai, alasan } = req.body;
+    const { nama, nim, ruangan, tanggal, hari, mulai, selesai, alasan } = req.body;
 
     // Cek 1: status pemetaan ruangan
     const peta = await Pemetaan.findOne({ kode: ruangan });
@@ -178,8 +178,7 @@ app.post('/api/peminjaman', async (req, res) => {
       return res.json({ message: 'Ditolak: ruangan reserved', status: 'rejected', id: simpan._id.toString() });
     }
 
-    // Cek 2: konflik jadwal reguler
-    const hari = getNamaHari(tanggal);
+    // Cek 2: konflik jadwal reguler — hari dikirim langsung dari frontend
     const semuaJadwal = await Jadwal.find({ ruangan, hari });
     const konflikJadwal = semuaJadwal.find(j => isOverlap(mulai, selesai, j.mulai, j.selesai)) || null;
 

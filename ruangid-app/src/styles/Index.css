@@ -632,8 +632,7 @@ body {
 
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-/* Side info panel */
-.side-info {}
+
 
 .info-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
 .info-list li {

@@ -1,7 +1,7 @@
 // pages/Peminjaman.jsx
 import { useState } from 'react';
 
-const ROOMS = ['4.2','4.3','4.4','4.5','4.6','4.7','4.8','4.9','4.10'];
+const ROOMS = ['4.2','4.3','4.4','4.5','4.6','4.7','4.8','4.9','4.10','4.11','4.12'];
 const NAMA_HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
 const STATUS_LABEL = { pending: 'Menunggu', approved: 'Disetujui', rejected: 'Ditolak' };
 const today = new Date().toISOString().split('T')[0];

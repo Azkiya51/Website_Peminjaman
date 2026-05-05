@@ -62,7 +62,7 @@ export default function Sidebar({ activePage, isAdmin, unreadCount, sidebarOpen,
       <div className="sidebar-bottom">
         <div className="sidebar-version">
           <i className="ri-circle-fill" style={{ color: 'var(--teal-400)', fontSize: 8 }} />
-          SiPinjem v1.0
+          Ruang.id beta
           {isAdmin && (
             <span style={{
               marginLeft: 'auto',

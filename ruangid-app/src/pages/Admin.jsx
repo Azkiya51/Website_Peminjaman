@@ -1,6 +1,4 @@
 // pages/Admin.jsx
-// Panel admin: Permohonan, Pemetaan Kelas, Atur Jadwal
-
 import { useState } from 'react';
 
 const ROOMS = ['4.2','4.3','4.4','4.5','4.6','4.7','4.8','4.9','4.10'];
@@ -17,7 +15,6 @@ export default function Admin({
 
   return (
     <section className="page active" id="page-admin">
-      {/* Header */}
       <div className="page-header">
         <div className="page-header-text">
           <h1><i className="ph-duotone ph-shield-star" /> Panel Admin</h1>
@@ -28,7 +25,6 @@ export default function Admin({
         </button>
       </div>
 
-      {/* Tabs */}
       <div className="admin-tabs">
         {[
           { key: 'permohonan',   icon: 'ph-inbox',           label: 'Permohonan' },
@@ -45,7 +41,6 @@ export default function Admin({
         ))}
       </div>
 
-      {/* Panels */}
       {activeTab === 'permohonan' && (
         <PermohonanPanel
           peminjaman={peminjaman}
@@ -75,12 +70,19 @@ export default function Admin({
 
 // ── Panel: Permohonan ─────────────────────────────────────────────────────────
 function PermohonanPanel({ peminjaman, onApproveReject, onSendMessage, showToast }) {
-  const [msgModal, setMsgModal] = useState(null); // { pinjamId, nama, ruangan }
+  const [msgModal, setMsgModal] = useState(null);
   const [msgForm, setMsgForm]   = useState({ subject: '', body: '' });
 
   const openMsg = (p) => {
     setMsgModal({ pinjamId: p.id, nama: p.nama, ruangan: p.ruangan });
-    setMsgForm({ subject: `Re: Peminjaman Kelas ${p.ruangan}`, body: '' });
+
+    // ✅ Pre-fill pesan dengan info konflik + saran (jika ditolak otomatis)
+    const defaultSubject = `Re: Peminjaman Kelas ${p.ruangan}`;
+    let defaultBody = '';
+    if (p.konflik_info) {
+      defaultBody = `Halo ${p.nama},\n\nPermohonan peminjaman Kelas ${p.ruangan} pada ${p.tanggal} pukul ${p.mulai}–${p.selesai} ditolak karena:\n\n${p.konflik_info}\n\nSaran alternatif:\n- Ruangan lain: (isi manual)\n- Jam lain: (isi manual)\n\nTerima kasih.`;
+    }
+    setMsgForm({ subject: defaultSubject, body: defaultBody });
   };
 
   const handleSend = async () => {
@@ -107,17 +109,21 @@ function PermohonanPanel({ peminjaman, onApproveReject, onSendMessage, showToast
               <thead>
                 <tr>
                   <th>#</th><th>Peminjam</th><th>Ruangan</th>
-                  <th>Waktu</th><th>Alasan</th><th>Status</th><th>Aksi</th>
+                  <th>Waktu</th><th>Alasan</th><th>Keterangan</th><th>Status</th><th>Aksi</th>
                 </tr>
               </thead>
               <tbody>
                 {[...peminjaman].reverse().map(p => (
                   <tr key={p.id}>
-                    <td>{p.id}</td>
+                    <td>{p.id.slice(-4)}</td>
                     <td><strong>{p.nama}</strong><br /><small style={{ color: 'var(--text-3)' }}>{p.nim}</small></td>
                     <td>Kelas {p.ruangan}</td>
                     <td>{p.tanggal}<br /><small>{p.mulai}–{p.selesai}</small></td>
-                    <td style={{ maxWidth: '160px', fontSize: '12px' }}>{p.alasan}</td>
+                    <td style={{ maxWidth: '140px', fontSize: '12px' }}>{p.alasan}</td>
+                    {/* ✅ Kolom keterangan konflik — tampil merah kalau ada */}
+                    <td style={{ maxWidth: '160px', fontSize: '11px', color: p.konflik_info ? 'var(--rose-500)' : 'var(--text-3)' }}>
+                      {p.konflik_info || <span style={{ color: 'var(--text-3)' }}>—</span>}
+                    </td>
                     <td><span className={`status-badge ${p.status}`}>{STATUS_LABEL[p.status] || p.status}</span></td>
                     <td>
                       {p.status === 'pending' ? (
@@ -130,6 +136,7 @@ function PermohonanPanel({ peminjaman, onApproveReject, onSendMessage, showToast
                           </button>
                         </div>
                       ) : (
+                        // ✅ Tombol Pesan selalu tampil untuk rejected (termasuk auto-reject)
                         <button className="btn-sm btn-msg" onClick={() => openMsg(p)}>
                           <i className="ph ph-paper-plane-tilt" /> Pesan
                         </button>
@@ -143,7 +150,6 @@ function PermohonanPanel({ peminjaman, onApproveReject, onSendMessage, showToast
         </div>
       </div>
 
-      {/* Send Message Modal */}
       {msgModal && (
         <div className="modal-overlay">
           <div className="modal">
@@ -162,7 +168,7 @@ function PermohonanPanel({ peminjaman, onApproveReject, onSendMessage, showToast
             <div className="form-group">
               <label>Pesan</label>
               <textarea
-                rows={5}
+                rows={7}
                 placeholder="Tulis pesan..."
                 value={msgForm.body}
                 onChange={e => setMsgForm(f => ({ ...f, body: e.target.value }))}
@@ -205,7 +211,6 @@ function PemetaanPanel({ pemetaan, onSavePemetaan, showToast }) {
   return (
     <div className="admin-panel active">
       <div className="pemetaan-grid">
-        {/* Form */}
         <div className="card">
           <h3><i className="ph-duotone ph-pencil-ruler" /> Tambah / Edit Pemetaan</h3>
           <div className="form-group">
@@ -239,7 +244,6 @@ function PemetaanPanel({ pemetaan, onSavePemetaan, showToast }) {
           </button>
         </div>
 
-        {/* List */}
         <div className="card">
           <h3><i className="ph-duotone ph-list-bullets" /> Daftar Ruangan</h3>
           <div className="room-map-list">

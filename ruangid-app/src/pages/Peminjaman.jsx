@@ -1,13 +1,18 @@
 // pages/Peminjaman.jsx
-// Halaman form peminjaman & riwayat
-
 import { useState } from 'react';
 
 const ROOMS = ['4.2','4.3','4.4','4.5','4.6','4.7','4.8','4.9','4.10'];
-
+const NAMA_HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
 const STATUS_LABEL = { pending: 'Menunggu', approved: 'Disetujui', rejected: 'Ditolak' };
-
 const today = new Date().toISOString().split('T')[0];
+
+// ✅ Hitung hari di frontend (browser) pakai timezone lokal user — akurat 100%
+function getHariFromTanggal(tanggal) {
+  if (!tanggal) return '';
+  const [y, m, d] = tanggal.split('-').map(Number);
+  const date = new Date(y, m - 1, d); // local time, tidak ada timezone shift
+  return NAMA_HARI[date.getDay()];
+}
 
 export default function Peminjaman({ peminjaman, pemetaan, onSubmit, showToast }) {
   const [form, setForm] = useState({
@@ -41,17 +46,23 @@ export default function Peminjaman({ peminjaman, pemetaan, onSubmit, showToast }
       showToast('⚠️ Jam selesai harus lebih dari jam mulai!', 'error');
       return;
     }
+
+    // ✅ Hitung hari di frontend, kirim ke backend
+    const hari = getHariFromTanggal(tanggal);
+
     setLoading(true);
-    const ok = await onSubmit(form);
+    const ok = await onSubmit({ ...form, hari });
     if (ok) setForm({ nama: '', nim: '', ruangan: '', tanggal: '', mulai: '', selesai: '', alasan: '' });
     setLoading(false);
   };
 
   const cekResult = cekStatus();
 
+  // Tampilkan hari yang dipilih secara realtime
+  const hariDipilih = getHariFromTanggal(form.tanggal);
+
   return (
     <section className="page active" id="page-peminjaman">
-      {/* Header */}
       <div className="page-header">
         <div className="page-header-text">
           <h1>Form Peminjaman</h1>
@@ -60,7 +71,6 @@ export default function Peminjaman({ peminjaman, pemetaan, onSubmit, showToast }
       </div>
 
       <div className="form-layout">
-        {/* ── Form Card ─────────────────────────────────────── */}
         <div className="card form-card">
           <div className="form-section-title">
             <i className="ph-duotone ph-user-circle" /> Data Peminjam
@@ -88,7 +98,15 @@ export default function Peminjaman({ peminjaman, pemetaan, onSubmit, showToast }
               </select>
             </div>
             <div className="form-group">
-              <label><i className="ph ph-calendar" /> Tanggal</label>
+              <label>
+                <i className="ph ph-calendar" /> Tanggal
+                {/* ✅ Tampilkan hari realtime */}
+                {hariDipilih && (
+                  <span style={{ marginLeft: '8px', color: 'var(--teal-600)', fontWeight: 600, fontSize: '12px' }}>
+                    ({hariDipilih})
+                  </span>
+                )}
+              </label>
               <input type="date" value={form.tanggal} min={today} onChange={set('tanggal')} />
             </div>
           </div>
@@ -114,7 +132,6 @@ export default function Peminjaman({ peminjaman, pemetaan, onSubmit, showToast }
           </button>
         </div>
 
-        {/* ── Side Info ─────────────────────────────────────── */}
         <div className="card side-info">
           <h3><i className="ph-duotone ph-info" /> Informasi Penting</h3>
           <ul className="info-list">
@@ -143,7 +160,6 @@ export default function Peminjaman({ peminjaman, pemetaan, onSubmit, showToast }
         </div>
       </div>
 
-      {/* ── Riwayat ──────────────────────────────────────────── */}
       <div className="card" style={{ marginTop: '24px' }}>
         <h3><i className="ph-duotone ph-archive" /> Riwayat Peminjaman Saya</h3>
         <div className="table-wrapper">
@@ -157,20 +173,23 @@ export default function Peminjaman({ peminjaman, pemetaan, onSubmit, showToast }
               <thead>
                 <tr>
                   <th>#</th><th>Nama</th><th>NIM</th><th>Ruangan</th>
-                  <th>Tanggal</th><th>Waktu</th><th>Status</th><th>Alasan</th>
+                  <th>Tanggal</th><th>Waktu</th><th>Status</th><th>Keterangan</th>
                 </tr>
               </thead>
               <tbody>
                 {[...peminjaman].reverse().map(p => (
                   <tr key={p.id}>
-                    <td>{p.id}</td>
+                    <td>{p.id.slice(-4)}</td>
                     <td>{p.nama}</td>
                     <td>{p.nim}</td>
                     <td>Kelas {p.ruangan}</td>
-                    <td>{p.tanggal}</td>
+                    <td>{p.tanggal}{p.hari ? <><br /><small style={{ color: 'var(--text-3)' }}>{p.hari}</small></> : ''}</td>
                     <td style={{ whiteSpace: 'nowrap' }}>{p.mulai} – {p.selesai}</td>
                     <td><span className={`status-badge ${p.status}`}>{STATUS_LABEL[p.status] || p.status}</span></td>
-                    <td style={{ fontSize: '12px', color: 'var(--text-3)', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.alasan}</td>
+                    {/* ✅ Tampilkan info konflik kalau ada */}
+                    <td style={{ fontSize: '11px', color: p.konflik_info ? 'var(--rose-500)' : 'var(--text-3)', maxWidth: '180px' }}>
+                      {p.konflik_info || '—'}
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -91,7 +91,7 @@ export default function Pesan({ pesan, onMarkRead, peminjaman }) {
                 <div className="msg-status-box">
                   <i className="ph-duotone ph-info" style={{ color: 'var(--teal-500)', fontSize: '16px' }} />
                   <div>
-                    <strong>Status Peminjaman #{relatedPinjam.id}:</strong>
+                    <strong>Status Peminjaman :</strong>
                     <span
                       className={`status-badge ${STATUS_CLASS[relatedPinjam.status]}`}
                       style={{ marginLeft: '6px' }}

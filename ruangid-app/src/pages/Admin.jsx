@@ -1,7 +1,7 @@
 // pages/Admin.jsx
 import { useState } from 'react';
 
-const ROOMS = ['4.2','4.3','4.4','4.5','4.6','4.7','4.8','4.9','4.10'];
+const ROOMS = ['4.2','4.3','4.4','4.5','4.6','4.7','4.8','4.9','4.10','4.11','4.12'];
 const DAYS  = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
 const STATUS_LABEL  = { pending: 'Menunggu', approved: 'Disetujui', rejected: 'Ditolak' };
 const STATUS_COLORS = { available: 'var(--emerald-500)', maintenance: 'var(--amber-500)', reserved: 'var(--rose-500)' };

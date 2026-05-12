@@ -82,7 +82,7 @@ export default function Peminjaman({ peminjaman, pemetaan, onSubmit, showToast }
           </div>
           <div className="form-group">
             <label><i className="ph ph-identification-card" /> NIM</label>
-            <input type="text" value={form.nim} onChange={set('nim')} placeholder="Contoh: 2201234567" />
+            <input type="text" value={form.nim} onChange={set('nim')} placeholder="Contoh: 1247050000" />
           </div>
 
           <div className="form-section-title" style={{ marginTop: '20px' }}>
@@ -135,11 +135,11 @@ export default function Peminjaman({ peminjaman, pemetaan, onSubmit, showToast }
         <div className="card side-info">
           <h3><i className="ph-duotone ph-info" /> Informasi Penting</h3>
           <ul className="info-list">
-            <li><i className="ph-fill ph-check-circle" /> Peminjaman diproses maksimal 1x24 jam</li>
-            <li><i className="ph-fill ph-check-circle" /> Ruangan dapat dipinjam Senin–Sabtu</li>
-            <li><i className="ph-fill ph-check-circle" /> Jam operasional 07.00 – 21.00</li>
-            <li><i className="ph-fill ph-check-circle" /> Bawa KTM saat menggunakan ruangan</li>
-            <li><i className="ph-fill ph-check-circle" /> Jaga kebersihan dan kembalikan kunci</li>
+            <li><i className="ph-fill ph-check-circle" /> 1. Peminjaman diproses maksimal 1x24 jam</li>
+            <li><i className="ph-fill ph-check-circle" /> 2. Ruangan dapat dipinjam Senin–Sabtu</li>
+            <li><i className="ph-fill ph-check-circle" /> 3. Jam operasional 07.00 – 21.00</li>
+            <li><i className="ph-fill ph-check-circle" /> 4. Bawa KTM saat menggunakan ruangan</li>
+            <li><i className="ph-fill ph-check-circle" /> 5. Jaga kebersihan dan kembalikan kunci</li>
           </ul>
 
           <div className="form-section-title" style={{ marginTop: '20px' }}>
@@ -172,14 +172,13 @@ export default function Peminjaman({ peminjaman, pemetaan, onSubmit, showToast }
             <table>
               <thead>
                 <tr>
-                  <th>#</th><th>Nama</th><th>NIM</th><th>Ruangan</th>
+                  <th>Nama</th><th>NIM</th><th>Ruangan</th>
                   <th>Tanggal</th><th>Waktu</th><th>Status</th><th>Keterangan</th>
                 </tr>
               </thead>
               <tbody>
                 {[...peminjaman].reverse().map(p => (
                   <tr key={p.id}>
-                    <td>{p.id.slice(-4)}</td>
                     <td>{p.nama}</td>
                     <td>{p.nim}</td>
                     <td>Kelas {p.ruangan}</td>
